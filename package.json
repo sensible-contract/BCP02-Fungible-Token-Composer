@@ -23,7 +23,7 @@
     "bigint-buffer": "^1.1.5",
     "glob": "^7.1.6",
     "hns-app": "^1.0.1",
-    "hns-http-plugin": "^1.0.1",
+    "hns-http-plugin": "^1.0.2",
     "hns-logger-plugin": "^1.0.0",
     "lodash": "=4.17.11",
     "moment": "^2.29.1",

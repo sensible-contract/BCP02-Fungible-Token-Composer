@@ -55,17 +55,9 @@ class TokenTxHelper {
       genesisContract,
     });
 
-    let outputs = [];
-    for (let i = 0; i < tx.inputs.length; i++) {
-      let output = tx.inputs[i].output;
-      outputs.push({
-        satoshis: output.satoshis,
-        script: output.script.toHex(),
-      });
-    }
     return {
       raw: tx.serialize(),
-      outputs,
+      outputs: this.getVinsOutputs(tx),
       sigtype: sighashType,
     };
   }
@@ -148,17 +140,9 @@ class TokenTxHelper {
       oracleSelecteds,
     });
 
-    let outputs = [];
-    for (let i = 0; i < tx.inputs.length; i++) {
-      let output = tx.inputs[i].output;
-      outputs.push({
-        satoshis: output.satoshis,
-        script: output.script.toHex(),
-      });
-    }
     return {
       raw: tx.serialize(),
-      outputs,
+      outputs: this.getVinsOutputs(tx),
       sigtype: sighashType,
     };
   }
