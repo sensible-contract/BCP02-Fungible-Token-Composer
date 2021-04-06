@@ -174,7 +174,7 @@ class TokenTxHelper {
     );
 
     let tokenOutputArray = receivers.map((v) => ({
-      address: bsv.Address.fromPublicKey(senderPk, network),
+      address: new bsv.Address(v.address, network),
       tokenAmount: BigInt(v.amount),
     }));
 
@@ -260,7 +260,7 @@ class TokenTxHelper {
     );
 
     let tokenOutputArray = receivers.map((v) => ({
-      address: bsv.Address.fromPublicKey(senderPk, network),
+      address: new bsv.Address(v.address, network),
       tokenAmount: BigInt(v.amount),
     }));
 
