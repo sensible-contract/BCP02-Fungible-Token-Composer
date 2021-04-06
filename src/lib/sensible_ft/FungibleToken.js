@@ -52,24 +52,24 @@ const RouteCheckContractClass_20To3 = buildContractClass(
   ScriptHelper.loadDesc("tokenRouteCheck_20To3_desc.json")
 );
 
-const UnlockContractCheckContractClass_3To5 = buildContractClass(
-  ScriptHelper.loadDesc("tokenUnlockContractCheck_desc.json")
+const UnlockContractCheckContractClass_1To5 = buildContractClass(
+  ScriptHelper.loadDesc("tokenUnlockContractCheck_1To5_desc.json")
 );
 
-const UnlockContractCheckContractClass_6To6 = buildContractClass(
-  ScriptHelper.loadDesc("tokenUnlockContractCheck_6To6_desc.json")
+const UnlockContractCheckContractClass_4To8 = buildContractClass(
+  ScriptHelper.loadDesc("tokenUnlockContractCheck_4To8_desc.json")
 );
 
-const UnlockContractCheckContractClass_10To10 = buildContractClass(
-  ScriptHelper.loadDesc("tokenUnlockContractCheck_10To10_desc.json")
+const UnlockContractCheckContractClass_8To12 = buildContractClass(
+  ScriptHelper.loadDesc("tokenUnlockContractCheck_8To12_desc.json")
+);
+
+const UnlockContractCheckContractClass_20To5 = buildContractClass(
+  ScriptHelper.loadDesc("tokenUnlockContractCheck_20To5_desc.json")
 );
 
 const UnlockContractCheckContractClass_3To100 = buildContractClass(
   ScriptHelper.loadDesc("tokenUnlockContractCheck_3To100_desc.json")
-);
-
-const UnlockContractCheckContractClass_20To3 = buildContractClass(
-  ScriptHelper.loadDesc("tokenUnlockContractCheck_20To3_desc.json")
 );
 
 const ROUTE_CHECK_TYPE_3To3 = "3To3";
@@ -136,7 +136,7 @@ class FungibleToken {
       new Bytes(
         Buffer.from(
           bsv.crypto.Hash.sha256ripemd160(
-            new UnlockContractCheckContractClass_3To5(
+            new UnlockContractCheckContractClass_1To5(
               this.rabinPubKeyArray
             ).lockingScript.toBuffer()
           )
@@ -145,7 +145,7 @@ class FungibleToken {
       new Bytes(
         Buffer.from(
           bsv.crypto.Hash.sha256ripemd160(
-            new UnlockContractCheckContractClass_6To6(
+            new UnlockContractCheckContractClass_4To8(
               this.rabinPubKeyArray
             ).lockingScript.toBuffer()
           )
@@ -154,7 +154,16 @@ class FungibleToken {
       new Bytes(
         Buffer.from(
           bsv.crypto.Hash.sha256ripemd160(
-            new UnlockContractCheckContractClass_10To10(
+            new UnlockContractCheckContractClass_8To12(
+              this.rabinPubKeyArray
+            ).lockingScript.toBuffer()
+          )
+        ).toString("hex")
+      ),
+      new Bytes(
+        Buffer.from(
+          bsv.crypto.Hash.sha256ripemd160(
+            new UnlockContractCheckContractClass_20To5(
               this.rabinPubKeyArray
             ).lockingScript.toBuffer()
           )
@@ -164,15 +173,6 @@ class FungibleToken {
         Buffer.from(
           bsv.crypto.Hash.sha256ripemd160(
             new UnlockContractCheckContractClass_3To100(
-              this.rabinPubKeyArray
-            ).lockingScript.toBuffer()
-          )
-        ).toString("hex")
-      ),
-      new Bytes(
-        Buffer.from(
-          bsv.crypto.Hash.sha256ripemd160(
-            new UnlockContractCheckContractClass_20To3(
               this.rabinPubKeyArray
             ).lockingScript.toBuffer()
           )
