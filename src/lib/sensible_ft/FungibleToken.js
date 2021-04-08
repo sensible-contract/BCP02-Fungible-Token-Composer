@@ -78,8 +78,6 @@ const ROUTE_CHECK_TYPE_10To10 = "10To10";
 const ROUTE_CHECK_TYPE_3To100 = "3To100";
 const ROUTE_CHECK_TYPE_20To3 = "20To3";
 
-const genesisContractSize = 3840;
-
 class FungibleToken {
   constructor(rabinPubKey1, rabinPubKey2, rabinPubKey3) {
     this.rabinPubKeyArray = [rabinPubKey1, rabinPubKey2, rabinPubKey3];
@@ -238,7 +236,9 @@ class FungibleToken {
     );
 
     tx.change(utxoAddress);
-    tx.fee(Math.ceil(tx._estimateSize() * feeb));
+    tx.fee(
+      Math.ceil((tx.serialize(true).length / 2 + utxos.length * 107) * feeb)
+    );
     return tx;
   }
 
@@ -373,21 +373,10 @@ class FungibleToken {
         satoshis: tokenContractSatoshis,
       })
     );
-
     tx.change(utxoAddress);
-    tx.fee(Math.ceil((tx._estimateSize() + 4300) * feeb));
-    const changeSatoshis = tx.outputs[tx.outputs.length - 1].satoshis;
 
     const curInputIndex = 0;
     const curInputSatoshis = tx.inputs[curInputIndex].output.satoshis;
-
-    const preimage = getPreimage(
-      tx,
-      genesisLockingScript.toASM(),
-      curInputSatoshis,
-      curInputIndex,
-      sighashType
-    );
 
     let sigBuf = Buffer.alloc(71, 0);
 
@@ -413,24 +402,35 @@ class FungibleToken {
 
       rabinPubKeyIndexArray = oracleSelecteds;
     }
-    const contractObj = genesisContract.unlock(
-      new SigHashPreimage(toHex(preimage)),
-      new Sig(sigBuf.toString("hex")),
-      new Bytes(rabinMsg.toString("hex")),
-      rabinPaddingArray,
-      rabinSigArray,
-      rabinPubKeyIndexArray,
-      genesisContractSatoshis,
-      new Bytes(tokenContract.lockingScript.toHex()),
-      tokenContractSatoshis,
-      new Ripemd160(toHex(utxoAddress.hashBuffer)),
-      changeSatoshis
-    );
-    // let ret = contractObj.verify();
-    // if (ret.success == false) throw ret;
-    // throw "success";
-    const unlockingScript = contractObj.toScript();
-    tx.inputs[0].setScript(unlockingScript);
+
+    //let the fee to be exact in the second round
+    for (let c = 0; c < 2; c++) {
+      tx.fee(
+        Math.ceil((tx.serialize(true).length / 2 + utxos.length * 107) * feeb)
+      );
+      let changeSatoshis = tx.outputs[tx.outputs.length - 1].satoshis;
+      let preimage = getPreimage(
+        tx,
+        genesisLockingScript.toASM(),
+        curInputSatoshis,
+        curInputIndex,
+        sighashType
+      );
+      let contractObj = genesisContract.unlock(
+        new SigHashPreimage(toHex(preimage)),
+        new Sig(sigBuf.toString("hex")),
+        new Bytes(rabinMsg.toString("hex")),
+        rabinPaddingArray,
+        rabinSigArray,
+        rabinPubKeyIndexArray,
+        genesisContractSatoshis,
+        new Bytes(tokenContract.lockingScript.toHex()),
+        tokenContractSatoshis,
+        new Ripemd160(toHex(utxoAddress.hashBuffer)),
+        changeSatoshis
+      );
+      tx.inputs[0].setScript(contractObj.toScript());
+    }
 
     return tx;
   }
@@ -508,8 +508,9 @@ class FungibleToken {
     );
 
     tx.change(utxoAddress);
-    tx.fee(Math.ceil(tx._estimateSize() * feeb));
-
+    tx.fee(
+      Math.ceil((tx.serialize(true).length / 2 + utxos.length * 107) * feeb)
+    );
     return tx;
   }
 
@@ -657,97 +658,97 @@ class FungibleToken {
     }
 
     tx.change(utxoAddress);
-    tx.fee(
-      Math.ceil(
-        (tx._estimateSize() +
-          genesisContractSize *
-            (inputTokenAmountArray.length + tokenOutputArray.length)) *
-          feeb
-      )
-    );
-    const changeSatoshis = tx.outputs[tx.outputs.length - 1].satoshis;
-    const routeCheckInputIndex = tokenInputLen + satoshiInputArray.length;
-    for (let i = 0; i < tokenInputLen; i++) {
-      const tokenInput = tokenInputArray[i];
-      const tokenScript = bsv.Script.fromBuffer(
-        Buffer.from(tokenInput.lockingScript, "hex")
+
+    //let the fee to be exact in the second round
+    for (let c = 0; c < 2; c++) {
+      tx.fee(
+        Math.ceil(
+          (tx.serialize(true).length / 2 + satoshiInputArray.length * 107) *
+            feeb
+        )
       );
-      const satoshis = tokenInput.satoshis;
-      const inIndex = i;
-      const preimage = getPreimage(
+      let changeSatoshis = tx.outputs[tx.outputs.length - 1].satoshis;
+      const routeCheckInputIndex = tokenInputLen + satoshiInputArray.length;
+      for (let i = 0; i < tokenInputLen; i++) {
+        const tokenInput = tokenInputArray[i];
+        const tokenScript = bsv.Script.fromBuffer(
+          Buffer.from(tokenInput.lockingScript, "hex")
+        );
+        const satoshis = tokenInput.satoshis;
+        const inIndex = i;
+        const preimage = getPreimage(
+          tx,
+          tokenScript.toASM(),
+          satoshis,
+          inIndex,
+          sighashType
+        );
+
+        let sig = Buffer.alloc(71, 0);
+
+        let tokenRanbinData = tokenRabinDatas[i];
+
+        const tokenContract = new TokenContractClass(
+          this.rabinPubKeyArray,
+          this.routeCheckCodeHashArray,
+          this.unlockContractCodeHashArray,
+          new Bytes(
+            toHex(bsv.crypto.Hash.sha256ripemd160(tokenScript.toBuffer()))
+          )
+        );
+
+        const unlockingContract = tokenContract.unlock(
+          new SigHashPreimage(toHex(preimage)),
+          new Bytes(toHex(prevouts)),
+          new Bytes(toHex(tokenRanbinData.tokenRabinMsg)),
+          tokenRanbinData.tokenRabinPaddingArray,
+          tokenRanbinData.tokenRabinSigArray,
+          rabinPubKeyIndexArray,
+          routeCheckInputIndex,
+          new Bytes(routeCheckTx.serialize(true)),
+          0,
+          tokenOutputLen,
+          new Bytes(toHex(tokenInput.preTokenAddress.hashBuffer)),
+          tokenInput.preTokenAmount,
+          new PubKey(toHex(senderPk)),
+          new Sig(toHex(sig)),
+          0,
+          new Bytes("00"),
+          0,
+          1
+        );
+        // let ret = unlockingContract.verify();
+        // if (ret.success == false) throw ret;
+        // throw "success";
+        tx.inputs[inIndex].setScript(unlockingContract.toScript());
+      }
+
+      let preimage = getPreimage(
         tx,
-        tokenScript.toASM(),
-        satoshis,
-        inIndex,
+        routeCheckTx.outputs[0].script.toASM(),
+        routeCheckTx.outputs[0].satoshis,
+        routeCheckInputIndex,
         sighashType
       );
 
-      let sig = Buffer.alloc(71, 0);
-
-      let tokenRanbinData = tokenRabinDatas[i];
-
-      const tokenContract = new TokenContractClass(
-        this.rabinPubKeyArray,
-        this.routeCheckCodeHashArray,
-        this.unlockContractCodeHashArray,
-        new Bytes(
-          toHex(bsv.crypto.Hash.sha256ripemd160(tokenScript.toBuffer()))
-        )
-      );
-
-      const unlockingContract = tokenContract.unlock(
+      let unlockingContract = routeCheckContract.unlock(
         new SigHashPreimage(toHex(preimage)),
+        tokenInputLen,
+        new Bytes(tokenInputArray[0].lockingScript),
         new Bytes(toHex(prevouts)),
-        new Bytes(toHex(tokenRanbinData.tokenRabinMsg)),
-        tokenRanbinData.tokenRabinPaddingArray,
-        tokenRanbinData.tokenRabinSigArray,
+        new Bytes(toHex(checkRabinMsgArray)),
+        new Bytes(toHex(checkRabinPaddingArray)),
+        new Bytes(toHex(checkRabinSigArray)),
         rabinPubKeyIndexArray,
-        routeCheckInputIndex,
-        new Bytes(routeCheckTx.serialize(true)),
-        0,
-        tokenOutputLen,
-        new Bytes(toHex(tokenInput.preTokenAddress.hashBuffer)),
-        tokenInput.preTokenAmount,
-        new PubKey(toHex(senderPk)),
-        new Sig(toHex(sig)),
-        0,
-        new Bytes("00"),
-        0,
-        1
+        new Bytes(toHex(inputTokenAddressArray)),
+        new Bytes(toHex(inputTokenAmountArray)),
+        new Bytes(toHex(outputSatoshiArray)),
+        changeSatoshis,
+        new Ripemd160(toHex(utxoAddress.hashBuffer))
       );
-      // let ret = unlockingContract.verify();
-      // if (ret.success == false) throw ret;
-      // throw "success";
-      tx.inputs[inIndex].setScript(unlockingContract.toScript());
+      tx.inputs[routeCheckInputIndex].setScript(unlockingContract.toScript());
     }
 
-    let preimage = getPreimage(
-      tx,
-      routeCheckTx.outputs[0].script.toASM(),
-      routeCheckTx.outputs[0].satoshis,
-      routeCheckInputIndex,
-      sighashType
-    );
-
-    const unlockingContract = routeCheckContract.unlock(
-      new SigHashPreimage(toHex(preimage)),
-      tokenInputLen,
-      new Bytes(tokenInputArray[0].lockingScript),
-      new Bytes(toHex(prevouts)),
-      new Bytes(toHex(checkRabinMsgArray)),
-      new Bytes(toHex(checkRabinPaddingArray)),
-      new Bytes(toHex(checkRabinSigArray)),
-      rabinPubKeyIndexArray,
-      new Bytes(toHex(inputTokenAddressArray)),
-      new Bytes(toHex(inputTokenAmountArray)),
-      new Bytes(toHex(outputSatoshiArray)),
-      changeSatoshis,
-      new Ripemd160(toHex(utxoAddress.hashBuffer))
-    );
-    // let ret = unlockingContract.verify();
-    // if (ret.success == false) throw ret;
-    // throw "success";
-    tx.inputs[routeCheckInputIndex].setScript(unlockingContract.toScript());
     return tx;
   }
 }

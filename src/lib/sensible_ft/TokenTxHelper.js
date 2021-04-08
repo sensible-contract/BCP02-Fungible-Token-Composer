@@ -401,7 +401,7 @@ class TokenTxHelper {
       feeb,
     });
     return {
-      raw: tx.serialize(),
+      raw: tx.serialize(true),
       outputs: this.getVinsOutputs(tx),
       sigtype: sighashType,
     };
