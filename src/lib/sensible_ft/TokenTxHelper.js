@@ -3,7 +3,6 @@ const TokenUtil = require("./tokenUtil");
 const { ScriptHelper } = require("./ScriptHelper");
 const { FungibleToken, sighashType } = require("./FungibleToken");
 const TokenProto = require("./tokenProto");
-const { toBufferLE } = require("bigint-buffer");
 
 class TokenTxHelper {
   static getVinsOutputs(tx) {
@@ -204,6 +203,7 @@ class TokenTxHelper {
     //create routeCheck contract
     routeCheckContract = ft.createRouteCheckContract(
       routeCheckType,
+      ftUtxos,
       tokenOutputArray,
       TokenProto.newTokenID(
         dataPartObj.tokenID.txid,
@@ -286,6 +286,7 @@ class TokenTxHelper {
     //create routeCheck contract
     let routeCheckContract = ft.createRouteCheckContract(
       routeCheckType,
+      ftUtxos,
       tokenOutputArray,
       TokenProto.newTokenID(
         dataPartObj.tokenID.txid,
@@ -317,29 +318,41 @@ class TokenTxHelper {
     let checkRabinPaddingArray = Buffer.alloc(0);
     let checkRabinSigArray = Buffer.alloc(0);
 
+    let sigReqArray = [];
     for (let i = 0; i < ftUtxos.length; i++) {
       let v = ftUtxos[i];
-
+      sigReqArray[i] = [];
       for (let j = 0; j < 2; j++) {
         const signerIndex = signerSelecteds[j];
-        let sigInfo = await ScriptHelper.signers[signerIndex].satoTxSigUTXO({
-          txId: v.txId,
-          index: v.outputIndex,
-          txHex: v.txHex,
+        sigReqArray[i][j] = ScriptHelper.signers[
+          signerIndex
+        ].satoTxSigUTXOSpendByUTXO({
+          txId: v.preTxId,
+          index: v.preOutputIndex,
+          txHex: v.preTxHex,
+          byTxIndex: v.outputIndex,
+          byTxId: v.txId,
+          byTxHex: v.txHex,
         });
+      }
+    }
+
+    for (let i = 0; i < sigReqArray.length; i++) {
+      for (let j = 0; j < sigReqArray[i].length; j++) {
+        let sigInfo = await sigReqArray[i][j];
         if (j == 0) {
           checkRabinMsgArray = Buffer.concat([
             checkRabinMsgArray,
-            Buffer.from(sigInfo.payload, "hex"),
+            Buffer.from(sigInfo.byTxPayload, "hex"),
           ]);
         }
 
-        const sigBuf = toBufferLE(sigInfo.sigBE, TokenUtil.RABIN_SIG_LEN);
+        const sigBuf = Buffer.from(sigInfo.byTxSigLE, "hex");
         checkRabinSigArray = Buffer.concat([checkRabinSigArray, sigBuf]);
         const paddingCountBuf = Buffer.alloc(2, 0);
-        paddingCountBuf.writeUInt16LE(sigInfo.padding.length / 2);
-        const padding = Buffer.alloc(sigInfo.padding.length / 2, 0);
-        padding.write(sigInfo.padding, "hex");
+        paddingCountBuf.writeUInt16LE(sigInfo.byTxPadding.length / 2);
+        const padding = Buffer.alloc(sigInfo.byTxPadding.length / 2, 0);
+        padding.write(sigInfo.byTxPadding, "hex");
         checkRabinPaddingArray = Buffer.concat([
           checkRabinPaddingArray,
           paddingCountBuf,
@@ -349,27 +362,17 @@ class TokenTxHelper {
     }
 
     const tokenRabinDatas = [];
-    for (let i = 0; i < ftUtxos.length; i++) {
-      let v = ftUtxos[i];
+
+    for (let i = 0; i < sigReqArray.length; i++) {
       let tokenRabinMsg;
       let tokenRabinSigArray = [];
       let tokenRabinPaddingArray = [];
-      for (let j = 0; j < 2; j++) {
-        const signerIndex = signerSelecteds[j];
-        let sigInfo = await ScriptHelper.signers[
-          signerIndex
-        ].satoTxSigUTXOSpendBy({
-          txId: v.preTxId,
-          index: v.preOutputIndex,
-          txHex: v.preTxHex,
-          byTxId: v.txId,
-          byTxHex: v.txHex,
-        });
+      for (let j = 0; j < sigReqArray[i].length; j++) {
+        let sigInfo = await sigReqArray[i][j];
         tokenRabinMsg = sigInfo.payload;
         tokenRabinSigArray.push(BigInt("0x" + sigInfo.sigBE));
         tokenRabinPaddingArray.push(new Bytes(sigInfo.padding));
       }
-
       tokenRabinDatas.push({
         tokenRabinMsg,
         tokenRabinSigArray,

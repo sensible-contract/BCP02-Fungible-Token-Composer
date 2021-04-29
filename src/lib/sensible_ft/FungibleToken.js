@@ -14,10 +14,9 @@ const {
   toHex,
 } = require("scryptlib");
 
-const { DataLen4, dummyTxId, ScriptHelper } = require("./ScriptHelper");
+const { ScriptHelper } = require("./ScriptHelper");
 const TokenProto = require("./tokenProto");
 const TokenUtil = require("./tokenUtil");
-const Proto = require("./protoheader");
 const Signature = bsv.crypto.Signature;
 const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
 const genesisFlag = 1;
@@ -437,12 +436,11 @@ class FungibleToken {
 
   createRouteCheckContract(
     routeCheckType,
+    tokenInputArray,
     tokenOutputArray,
     tokenID,
     tokenCodeHash
   ) {
-    const nReceiverBuf = Buffer.alloc(1, 0);
-    nReceiverBuf.writeUInt8(tokenOutputArray.length);
     let recervierArray = Buffer.alloc(0, 0);
     let receiverTokenAmountArray = Buffer.alloc(0, 0);
     for (let i = 0; i < tokenOutputArray.length; i++) {
@@ -478,9 +476,10 @@ class FungibleToken {
     }
 
     const data = Buffer.concat([
+      TokenUtil.getUInt32Buf(tokenInputArray.length),
       receiverTokenAmountArray,
       recervierArray,
-      nReceiverBuf,
+      TokenUtil.getUInt32Buf(tokenOutputArray.length),
       tokenCodeHash,
       tokenID,
     ]);
@@ -699,6 +698,7 @@ class FungibleToken {
 
         const unlockingContract = tokenContract.unlock(
           new SigHashPreimage(toHex(preimage)),
+          inIndex,
           new Bytes(toHex(prevouts)),
           new Bytes(toHex(tokenRanbinData.tokenRabinMsg)),
           tokenRanbinData.tokenRabinPaddingArray,
@@ -733,7 +733,6 @@ class FungibleToken {
 
       let unlockingContract = routeCheckContract.unlock(
         new SigHashPreimage(toHex(preimage)),
-        tokenInputLen,
         new Bytes(tokenInputArray[0].lockingScript),
         new Bytes(toHex(prevouts)),
         new Bytes(toHex(checkRabinMsgArray)),

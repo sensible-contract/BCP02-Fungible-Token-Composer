@@ -46,6 +46,28 @@ class SatotxSigner {
     }
     return _res.data;
   }
+
+  async satoTxSigUTXOSpendByUTXO({
+    index,
+    txId,
+    txHex,
+    byTxIndex,
+    byTxId,
+    byTxHex,
+  }) {
+    let _res = await Net.httpPost(
+      `${this.satotxApiPrefix}/utxo-spend-by-utxo/${txId}/${index}/${byTxId}/${byTxIndex}`,
+      {
+        txHex: txHex,
+        byTxHex: byTxHex,
+      }
+    );
+    if (_res.code != 0) {
+      throw _res.msg;
+    }
+
+    return _res.data;
+  }
 }
 
 module.exports = {
