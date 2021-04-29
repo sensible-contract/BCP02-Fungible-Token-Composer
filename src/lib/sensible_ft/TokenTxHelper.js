@@ -78,7 +78,7 @@ class TokenTxHelper {
     receiverAddress,
     tokenAmount,
     allowIncreaseIssues,
-    oracleSelecteds,
+    signerSelecteds,
 
     utxos,
     utxoAddress,
@@ -99,12 +99,10 @@ class TokenTxHelper {
     const preIssueTx = new bsv.Transaction(spendByTxHex);
     const genesisLockingScript = preIssueTx.outputs[spendByOutputIndex].script;
 
-    let oracleDataObj = TokenProto.parseOracleData(
-      genesisLockingScript.toBuffer()
-    );
+    let dataPartObj = TokenProto.parseDataPart(genesisLockingScript.toBuffer());
     let genesisContract = ft.createGenesisContract(issuerPk);
-    const oracleData = TokenProto.newOracleData(oracleDataObj);
-    genesisContract.setDataPart(oracleData.toString("hex"));
+    const dataPart = TokenProto.newDataPart(dataPartObj);
+    genesisContract.setDataPart(dataPart.toString("hex"));
 
     let tokenContract = ft.createTokenContract(
       genesisTxId,
@@ -137,7 +135,7 @@ class TokenTxHelper {
         byTxId: spendByTxId,
         byTxHex: spendByTxHex,
       },
-      oracleSelecteds,
+      signerSelecteds,
     });
 
     return {
@@ -201,17 +199,15 @@ class TokenTxHelper {
     const ftUtxoTx = new bsv.Transaction(defaultFtUtxo.txHex);
     const tokenLockingScript =
       ftUtxoTx.outputs[defaultFtUtxo.outputIndex].script;
-    let oracleDataObj = TokenProto.parseOracleData(
-      tokenLockingScript.toBuffer()
-    );
+    let dataPartObj = TokenProto.parseDataPart(tokenLockingScript.toBuffer());
 
     //create routeCheck contract
     routeCheckContract = ft.createRouteCheckContract(
       routeCheckType,
       tokenOutputArray,
       TokenProto.newTokenID(
-        oracleDataObj.tokenID.txid,
-        oracleDataObj.tokenID.index
+        dataPartObj.tokenID.txid,
+        dataPartObj.tokenID.index
       ),
       TokenProto.getContractCodeHash(tokenLockingScript.toBuffer())
     );
@@ -239,7 +235,7 @@ class TokenTxHelper {
     ftUtxos,
     routeCheckType,
     routeCheckHex,
-    oracleSelecteds,
+    signerSelecteds,
 
     utxos,
     utxoAddress,
@@ -285,17 +281,15 @@ class TokenTxHelper {
     const ftUtxoTx = new bsv.Transaction(defaultFtUtxo.txHex);
     const tokenLockingScript =
       ftUtxoTx.outputs[defaultFtUtxo.outputIndex].script;
-    let oracleDataObj = TokenProto.parseOracleData(
-      tokenLockingScript.toBuffer()
-    );
+    let dataPartObj = TokenProto.parseDataPart(tokenLockingScript.toBuffer());
 
     //create routeCheck contract
     let routeCheckContract = ft.createRouteCheckContract(
       routeCheckType,
       tokenOutputArray,
       TokenProto.newTokenID(
-        oracleDataObj.tokenID.txid,
-        oracleDataObj.tokenID.index
+        dataPartObj.tokenID.txid,
+        dataPartObj.tokenID.index
       ),
       TokenProto.getContractCodeHash(tokenLockingScript.toBuffer())
     );
@@ -327,7 +321,7 @@ class TokenTxHelper {
       let v = ftUtxos[i];
 
       for (let j = 0; j < 2; j++) {
-        const signerIndex = oracleSelecteds[j];
+        const signerIndex = signerSelecteds[j];
         let sigInfo = await ScriptHelper.signers[signerIndex].satoTxSigUTXO({
           txId: v.txId,
           index: v.outputIndex,
@@ -361,7 +355,7 @@ class TokenTxHelper {
       let tokenRabinSigArray = [];
       let tokenRabinPaddingArray = [];
       for (let j = 0; j < 2; j++) {
-        const signerIndex = oracleSelecteds[j];
+        const signerIndex = signerSelecteds[j];
         let sigInfo = await ScriptHelper.signers[
           signerIndex
         ].satoTxSigUTXOSpendBy({
@@ -383,7 +377,7 @@ class TokenTxHelper {
       });
     }
 
-    let rabinPubKeyIndexArray = oracleSelecteds;
+    let rabinPubKeyIndexArray = signerSelecteds;
 
     let tx = await ft.createTransferTx({
       routeCheckTx,

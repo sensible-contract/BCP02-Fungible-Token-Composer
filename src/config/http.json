@@ -1,6 +1,12 @@
 {
   "default": {
-    "port": 8091,
+    "port": 8093,
+    "routesPath": "route",
+    "reloadRoutes": true,
+    "enableCORS": true
+  },
+  "production": {
+    "port": 8095,
     "routesPath": "route",
     "reloadRoutes": true,
     "enableCORS": true

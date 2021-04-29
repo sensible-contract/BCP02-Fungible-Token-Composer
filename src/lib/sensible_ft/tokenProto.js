@@ -83,7 +83,7 @@ token.getContractCodeHash = function (script) {
   return bsv.crypto.Hash.sha256ripemd160(token.getContractCode(script));
 };
 
-token.getOracleData = function (script) {
+token.getDataPart = function (script) {
   return script.subarray(script.length - TOKEN_HEADER_LEN, script.length);
 };
 
@@ -167,7 +167,7 @@ token.newTokenID = function (txid, index) {
   return Buffer.concat([txidBuf, indexBuf]);
 };
 
-token.newOracleData = function ({
+token.newDataPart = function ({
   tokenName,
   tokenSymbol,
   genesisFlag,
@@ -224,7 +224,7 @@ function reverseEndian(hexStr) {
   return buf.toString("hex").match(/.{2}/g).reverse().join("");
 }
 
-token.parseOracleData = function (scriptBuf) {
+token.parseDataPart = function (scriptBuf) {
   let tokenName = token.getTokenName(scriptBuf).toString();
   let tokenSymbol = token.getTokenSymbol(scriptBuf).toString();
   let decimalNum = token.getDecimalNum(scriptBuf);
@@ -248,8 +248,8 @@ token.parseOracleData = function (scriptBuf) {
   };
 };
 
-token.updateScript = function (scriptBuf, oracleDataObj) {
+token.updateScript = function (scriptBuf, dataPartObj) {
   const firstBuf = scriptBuf.subarray(0, scriptBuf.length - TOKEN_HEADER_LEN);
-  const oracleData = token.newOracleData(oracleDataObj);
-  return Buffer.concat([firstBuf, oracleData]);
+  const dataPart = token.newDataPart(dataPartObj);
+  return Buffer.concat([firstBuf, dataPart]);
 };

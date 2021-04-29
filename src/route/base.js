@@ -3,7 +3,7 @@ const { NetMgr } = require("../domain/NetMgr");
 const { TokenTxHelper } = require("../lib/sensible_ft/TokenTxHelper");
 exports.default = function () {
   NetMgr.listen("POST", "/genesis", async function (req, res, params, body) {
-    const oracles = app.get("oracleConfig");
+    const signers = app.get("signerConfig");
     const {
       issuerPk,
       tokenName,
@@ -16,7 +16,7 @@ exports.default = function () {
       network,
     } = body;
     return await TokenTxHelper.genesis({
-      satotxPubKeys: oracles.map((v) => v.satotxPubKey),
+      satotxPubKeys: signers.map((v) => v.satotxPubKey),
 
       issuerPk,
       tokenName,
@@ -31,7 +31,7 @@ exports.default = function () {
   });
 
   NetMgr.listen("POST", "/issue", async function (req, res, params, body) {
-    const oracles = app.get("oracleConfig");
+    const signers = app.get("signerConfig");
     const {
       genesisTxId,
       genesisOutputIndex,
@@ -46,7 +46,7 @@ exports.default = function () {
       receiverAddress,
       tokenAmount,
       allowIncreaseIssues,
-      oracleSelecteds,
+      signerSelecteds,
 
       utxos,
       utxoAddress,
@@ -54,7 +54,7 @@ exports.default = function () {
       network,
     } = body;
     return await TokenTxHelper.issue({
-      satotxPubKeys: oracles.map((v) => v.satotxPubKey),
+      satotxPubKeys: signers.map((v) => v.satotxPubKey),
 
       genesisTxId,
       genesisOutputIndex,
@@ -69,7 +69,7 @@ exports.default = function () {
       receiverAddress,
       tokenAmount,
       allowIncreaseIssues,
-      oracleSelecteds,
+      signerSelecteds,
 
       utxos,
       utxoAddress,
@@ -79,7 +79,7 @@ exports.default = function () {
   });
 
   NetMgr.listen("POST", "/routeCheck", async function (req, res, params, body) {
-    const oracles = app.get("oracleConfig");
+    const signers = app.get("signerConfig");
     const {
       senderPk,
       receivers,
@@ -92,7 +92,7 @@ exports.default = function () {
       network,
     } = body;
     return await TokenTxHelper.routeCheck({
-      satotxPubKeys: oracles.map((v) => v.satotxPubKey),
+      satotxPubKeys: signers.map((v) => v.satotxPubKey),
 
       senderPk,
       receivers,
@@ -107,14 +107,14 @@ exports.default = function () {
   });
 
   NetMgr.listen("POST", "/transfer", async function (req, res, params, body) {
-    const oracles = app.get("oracleConfig");
+    const signers = app.get("signerConfig");
     const {
       senderPk,
       receivers,
       ftUtxos,
       routeCheckType,
       routeCheckHex,
-      oracleSelecteds,
+      signerSelecteds,
 
       utxos,
       utxoAddress,
@@ -122,14 +122,14 @@ exports.default = function () {
       network,
     } = body;
     return await TokenTxHelper.transfer({
-      satotxPubKeys: oracles.map((v) => v.satotxPubKey),
+      satotxPubKeys: signers.map((v) => v.satotxPubKey),
 
       senderPk,
       ftUtxos,
       receivers,
       routeCheckHex,
       routeCheckType,
-      oracleSelecteds,
+      signerSelecteds,
 
       utxos,
       utxoAddress,

@@ -157,7 +157,7 @@ TokenUtil.createGenesisContract = function (
     tokenName.toString("hex"),
     decimalNum
   );
-  const oracleData = Buffer.concat([
+  const dataPart = Buffer.concat([
     tokenName,
     tokenSymbol,
     genesisFlag,
@@ -168,7 +168,7 @@ TokenUtil.createGenesisContract = function (
     tokenType, // type
     PROTO_FLAG,
   ]);
-  genesis.setDataPart(oracleData.toString("hex"));
+  genesis.setDataPart(dataPart.toString("hex"));
   return genesis;
 };
 
@@ -216,7 +216,7 @@ TokenUtil.createGenesis = function (
     tokenName.toString("hex"),
     decimalNum
   );
-  const oracleData = Buffer.concat([
+  const dataPart = Buffer.concat([
     tokenName,
     tokenSymbol,
     genesisFlag,
@@ -227,9 +227,7 @@ TokenUtil.createGenesis = function (
     tokenType, // type
     PROTO_FLAG,
   ]);
-  console.log("oracleData:", oracleData.toString("hex"));
-  genesis.setDataPart(oracleData.toString("hex"));
-  console.log("genesis data part:", oracleData.toString("hex"));
+  genesis.setDataPart(dataPart.toString("hex"));
 
   let genesisContract = genesis;
 
@@ -354,7 +352,7 @@ TokenUtil.createToken = function (
   const buffValue = Buffer.alloc(8, 0);
   buffValue.writeBigUInt64LE(BigInt(tokenValue));
 
-  const oracleData = Buffer.concat([
+  const dataPart = Buffer.concat([
     tokenName,
     tokenSymbol,
     nonGenesisFlag, // genesis flag
@@ -365,7 +363,7 @@ TokenUtil.createToken = function (
     tokenType, // type
     PROTO_FLAG,
   ]);
-  tokenContract.setDataPart(oracleData.toString("hex"));
+  tokenContract.setDataPart(dataPart.toString("hex"));
 
   const tx = new bsv.Transaction();
   tx.addInput(

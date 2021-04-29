@@ -31,15 +31,15 @@ var app = exports.app;
     app.http.start();
 
     //todo
-    app.loadConfig("oracleConfig", require("./config/oracle.json"));
-    const oracles = app.get("oracleConfig");
+    app.loadConfig("signerConfig", require("./config/signer.json"));
+    const signers = app.get("signerConfig");
 
     const { ScriptHelper } = require("./lib/sensible_ft/ScriptHelper");
     const { SatotxSigner } = require("./lib/sensible_ft/SatotxSigner");
     ScriptHelper.prepare([
-      new SatotxSigner(oracles[0].satotxApiPrefix),
-      new SatotxSigner(oracles[1].satotxApiPrefix),
-      new SatotxSigner(oracles[2].satotxApiPrefix),
+      new SatotxSigner(signers[0].satotxApiPrefix),
+      new SatotxSigner(signers[1].satotxApiPrefix),
+      new SatotxSigner(signers[2].satotxApiPrefix),
     ]);
 
     console.log("start completed");

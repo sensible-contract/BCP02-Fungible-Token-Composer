@@ -196,14 +196,14 @@ class FungibleToken {
       this.rabinPubKeyArray
     );
     if (tokenName) {
-      const oracleData = TokenProto.newOracleData({
+      const dataPart = TokenProto.newDataPart({
         tokenName,
         tokenSymbol,
         genesisFlag,
         decimalNum,
         tokenType,
       });
-      genesisContract.setDataPart(oracleData.toString("hex"));
+      genesisContract.setDataPart(dataPart.toString("hex"));
     }
 
     return genesisContract;
@@ -258,15 +258,15 @@ class FungibleToken {
     { receiverAddress, tokenAmount } = {}
   ) {
     const scriptBuffer = genesisContract.lockingScript.toBuffer();
-    const oracleDataObj = TokenProto.parseOracleData(scriptBuffer);
+    const dataPartObj = TokenProto.parseDataPart(scriptBuffer);
 
     let genesisHash;
-    if (oracleDataObj.tokenID.txid == genesisTokenIDTxid) {
-      oracleDataObj.tokenID = {
+    if (dataPartObj.tokenID.txid == genesisTokenIDTxid) {
+      dataPartObj.tokenID = {
         txid: toSpentGenesisTxId,
         index: toSpentGenesisTxOutputIndex,
       };
-      const newScriptBuf = TokenProto.updateScript(scriptBuffer, oracleDataObj);
+      const newScriptBuf = TokenProto.updateScript(scriptBuffer, dataPartObj);
       genesisHash = bsv.crypto.Hash.sha256ripemd160(newScriptBuf);
     } else {
       genesisHash = bsv.crypto.Hash.sha256ripemd160(scriptBuffer);
@@ -279,11 +279,11 @@ class FungibleToken {
       new Bytes(toHex(genesisHash))
     );
     if (receiverAddress) {
-      oracleDataObj.genesisFlag = nonGenesisFlag;
-      oracleDataObj.tokenAddress = toHex(receiverAddress.hashBuffer);
-      oracleDataObj.tokenAmount = tokenAmount;
-      const oracleData = TokenProto.newOracleData(oracleDataObj);
-      tokenContract.setDataPart(toHex(oracleData));
+      dataPartObj.genesisFlag = nonGenesisFlag;
+      dataPartObj.tokenAddress = toHex(receiverAddress.hashBuffer);
+      dataPartObj.tokenAmount = tokenAmount;
+      const dataPart = TokenProto.newDataPart(dataPartObj);
+      tokenContract.setDataPart(toHex(dataPart));
     }
 
     return tokenContract;
@@ -301,7 +301,7 @@ class FungibleToken {
     tokenContract,
     allowIncreaseIssues,
     satotxData,
-    oracleSelecteds,
+    signerSelecteds,
   }) {
     const tx = new bsv.Transaction();
 
@@ -333,23 +333,23 @@ class FungibleToken {
       );
     });
 
-    const tokenOracleDataObj = TokenProto.parseOracleData(
+    const tokenDataPartObj = TokenProto.parseDataPart(
       tokenContract.lockingScript.toBuffer()
     );
-    const genesisOracleDataObj = TokenProto.parseOracleData(
+    const genesisDataPartObj = TokenProto.parseDataPart(
       genesisContract.lockingScript.toBuffer()
     );
 
     const isFirstGenesis =
-      genesisOracleDataObj.tokenID.txid == genesisTokenIDTxid;
+      genesisDataPartObj.tokenID.txid == genesisTokenIDTxid;
 
     let genesisContractSatoshis = 0;
     if (allowIncreaseIssues) {
-      genesisOracleDataObj.tokenID = tokenOracleDataObj.tokenID;
+      genesisDataPartObj.tokenID = tokenDataPartObj.tokenID;
       let newGenesislockingScript = bsv.Script.fromBuffer(
         TokenProto.updateScript(
           genesisLockingScript.toBuffer(),
-          genesisOracleDataObj
+          genesisDataPartObj
         )
       );
       genesisContractSatoshis = ScriptHelper.getDustThreshold(
@@ -391,7 +391,7 @@ class FungibleToken {
       rabinPubKeyIndexArray = [0, 1];
     } else {
       for (let i = 0; i < 2; i++) {
-        const signerIndex = oracleSelecteds[i];
+        const signerIndex = signerSelecteds[i];
         let sigInfo = await ScriptHelper.signers[
           signerIndex
         ].satoTxSigUTXOSpendBy(satotxData);
@@ -400,7 +400,7 @@ class FungibleToken {
         rabinSigArray.push(BigInt("0x" + sigInfo.sigBE));
       }
 
-      rabinPubKeyIndexArray = oracleSelecteds;
+      rabinPubKeyIndexArray = signerSelecteds;
     }
 
     //let the fee to be exact in the second round

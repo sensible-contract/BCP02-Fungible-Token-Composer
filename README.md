@@ -72,7 +72,7 @@ Here is a example for config
 
 ```
 
-src/config/oracle.json
+src/config/signer.json
 {
   "default": [
     {
@@ -255,7 +255,7 @@ curl -X POST  -H "Content-Type: application/json" --data '{
 | receiverAddress     | true     | string | the address of the receiver                          |
 | tokenAmount         | true     | string | the token amount to issue                            |
 | allowIncreaseIssues | true     | bool   | allow to increase issues                             |
-| oracleSelecteds     | true     | array  | the oracles choose to verify                         |
+| signerSelecteds     | true     | array  | the signers choose to verify                         |
 | utxos               | true     | array  | e.g. [{txId:'xxxx',outputIndex:0,satoshis:1000}]     |
 | utxoAddress         | true     | string | the address of the utxos                             |
 | feeb                | true     | number | sat/B. the fee rate for this transaction             |
@@ -277,7 +277,7 @@ curl -X POST -H "Content-Type: application/json" --data '{
   "receiverAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
   "tokenAmount": "100",
   "allowIncreaseIssues": true,
-  "oracleSelecteds": [0, 1],
+  "signerSelecteds": [0, 1],
   "utxos": [
     {
       "txId": "0df4c290b872724f7d3e281e3b2ce70b6d820ab2a784f0ed965c25d80b9344ca",
@@ -354,7 +354,7 @@ curl -X POST -H "Content-Type: application/json" --data '{
     }
   ],
   "routeCheckType": "3To3",
-  "oracleSelecteds": [0, 1],
+  "signerSelecteds": [0, 1],
   "utxos": [
     {
       "txId": "da88d0fe634d7096f0486b1df0f78b65865cb29b55fb0ce1aae250018ff09801",
@@ -398,7 +398,7 @@ curl -X POST -H "Content-Type: application/json" --data '{
 | ftUtxos         | true     | array  | the token utxos of sender e.g. [{txId:'',outputIndex:0,txHex:'',satoshis:1000,preTxId:'',preOutputIndex:0,preTxHex:'',preTokenAddress:'',preTokenAmount:1000,}] |
 | routeCheckType  | true     | string | "3To3"/"6To6"/"10To10"/"3To100"/"20To3" the token inputs count and token outputs count                                                                          |
 | routeCheckHex   | true     | string | the routeCheck tx-hex                                                                                                                                           |
-| oracleSelecteds | true     | array  | the oracles choose to verify                                                                                                                                    |
+| signerSelecteds | true     | array  | the signers choose to verify                                                                                                                                    |
 | utxos           | true     | array  | e.g. [{txId:'xxxx',outputIndex:0,satoshis:1000}]                                                                                                                |
 | utxoAddress     | true     | string | the address of the utxos                                                                                                                                        |
 | feeb            | true     | number | sat/B. the fee rate for this transaction                                                                                                                        |
@@ -430,7 +430,7 @@ curl -X POST -H "Content-Type: application/json" --data '{
   ],
   "routeCheckType": "3To3",
   "routeCheckHex": "xxxxxxx",
-  "oracleSelecteds": [0, 1],
+  "signerSelecteds": [0, 1],
   "utxos": [
     {
       "txId": "6e456b523c36983d8f34fdf16a193c0451dc6091bfb54b0f8661c36a106212a1",
