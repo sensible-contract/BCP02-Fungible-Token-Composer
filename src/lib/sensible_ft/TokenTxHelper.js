@@ -1,9 +1,8 @@
 const { bsv, Bytes, toHex } = require("scryptlib");
-const TokenUtil = require("./tokenUtil");
 const { ScriptHelper } = require("./ScriptHelper");
 const { FungibleToken, sighashType } = require("./FungibleToken");
 const TokenProto = require("./tokenProto");
-
+const TokenUtil = require("./tokenUtil");
 class TokenTxHelper {
   static getVinsOutputs(tx) {
     let outputs = [];
@@ -26,11 +25,14 @@ class TokenTxHelper {
     decimalNum,
 
     utxos,
-    utxoAddress,
+    changeAddress,
     feeb,
     network = "mainnet",
   }) {
-    utxoAddress = new bsv.Address(utxoAddress, network);
+    utxos.forEach((utxo) => {
+      utxo.address = new bsv.Address(utxo.address, network);
+    });
+    changeAddress = new bsv.Address(changeAddress, network);
     issuerPk = new bsv.PublicKey(issuerPk);
 
     let ft = new FungibleToken(
@@ -49,7 +51,7 @@ class TokenTxHelper {
     //create genesis tx
     let tx = ft.createGenesisTx({
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       genesisContract,
     });
@@ -80,11 +82,14 @@ class TokenTxHelper {
     signerSelecteds,
 
     utxos,
-    utxoAddress,
+    changeAddress,
     feeb,
     network = "mainnet",
   }) {
-    utxoAddress = new bsv.Address(utxoAddress, network);
+    utxos.forEach((utxo) => {
+      utxo.address = new bsv.Address(utxo.address, network);
+    });
+    changeAddress = new bsv.Address(changeAddress, network);
     issuerPk = new bsv.PublicKey(issuerPk);
     receiverAddress = new bsv.Address(receiverAddress, network);
     tokenAmount = BigInt(tokenAmount);
@@ -121,7 +126,7 @@ class TokenTxHelper {
       genesisLockingScript,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       issuerPk,
 
@@ -153,11 +158,14 @@ class TokenTxHelper {
     routeCheckType,
 
     utxos,
-    utxoAddress,
+    changeAddress,
     feeb,
     network = "mainnet",
   }) {
-    utxoAddress = new bsv.Address(utxoAddress, network);
+    utxos.forEach((utxo) => {
+      utxo.address = new bsv.Address(utxo.address, network);
+    });
+    changeAddress = new bsv.Address(changeAddress, network);
     senderPk = new bsv.PublicKey(senderPk);
     ftUtxos.forEach((v) => {
       v.tokenAmount = BigInt(v.tokenAmount);
@@ -215,7 +223,7 @@ class TokenTxHelper {
     //create routeCheck tx
     let routeCheckTx = ft.createRouteCheckTx({
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       routeCheckContract,
     });
@@ -238,11 +246,11 @@ class TokenTxHelper {
     signerSelecteds,
 
     utxos,
-    utxoAddress,
+    changeAddress,
     feeb,
     network = "mainnet",
   }) {
-    utxoAddress = new bsv.Address(utxoAddress, network);
+    changeAddress = new bsv.Address(changeAddress, network);
     senderPk = new bsv.PublicKey(senderPk);
     ftUtxos.forEach((v) => {
       v.tokenAmount = BigInt(v.tokenAmount);
@@ -308,7 +316,7 @@ class TokenTxHelper {
     }));
 
     const satoshiInputArray = utxos.map((v) => ({
-      lockingScript: bsv.Script.buildPublicKeyHashOut(utxoAddress).toHex(),
+      lockingScript: bsv.Script.buildPublicKeyHashOut(v.address).toHex(),
       satoshis: v.satoshis,
       txId: v.txId,
       outputIndex: v.outputIndex,
@@ -347,7 +355,10 @@ class TokenTxHelper {
           ]);
         }
 
-        const sigBuf = Buffer.from(sigInfo.byTxSigLE, "hex");
+        const sigBuf = TokenUtil.toBufferLE(
+          sigInfo.byTxSigBE,
+          TokenUtil.RABIN_SIG_LEN
+        );
         checkRabinSigArray = Buffer.concat([checkRabinSigArray, sigBuf]);
         const paddingCountBuf = Buffer.alloc(2, 0);
         paddingCountBuf.writeUInt16LE(sigInfo.byTxPadding.length / 2);
@@ -360,7 +371,6 @@ class TokenTxHelper {
         ]);
       }
     }
-
     const tokenRabinDatas = [];
 
     for (let i = 0; i < sigReqArray.length; i++) {
@@ -394,7 +404,7 @@ class TokenTxHelper {
       tokenRabinDatas,
       routeCheckContract,
       senderPk,
-      utxoAddress,
+      changeAddress,
       feeb,
     });
     return {

@@ -4,6 +4,16 @@ const TokenUtil = module.exports;
 
 TokenUtil.RABIN_SIG_LEN = 128;
 
+TokenUtil.toBufferLE = function (num, width) {
+  const hex = num.toString(16);
+  const buffer = Buffer.from(
+    hex.padStart(width * 2, "0").slice(0, width * 2),
+    "hex"
+  );
+  buffer.reverse();
+  return buffer;
+};
+
 TokenUtil.getUInt8Buf = function (amount) {
   const buf = Buffer.alloc(1, 0);
   buf.writeUInt8(amount);

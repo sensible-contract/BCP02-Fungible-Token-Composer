@@ -216,13 +216,13 @@ class FungibleToken {
    * @param {number} feeb feeb
    * @param {string} genesisScript genesis contract's locking scriptsatoshis
    */
-  createGenesisTx({ utxos, utxoAddress, feeb, genesisContract }) {
+  createGenesisTx({ utxos, changeAddress, feeb, genesisContract }) {
     const tx = new bsv.Transaction().from(
       utxos.map((utxo) => ({
         txId: utxo.txId,
         outputIndex: utxo.outputIndex,
         satoshis: utxo.satoshis,
-        script: bsv.Script.buildPublicKeyHashOut(utxoAddress).toHex(),
+        script: bsv.Script.buildPublicKeyHashOut(utxo.address).toHex(),
       }))
     );
     tx.addOutput(
@@ -234,7 +234,7 @@ class FungibleToken {
       })
     );
 
-    tx.change(utxoAddress);
+    tx.change(changeAddress);
     tx.fee(
       Math.ceil((tx.serialize(true).length / 2 + utxos.length * 107) * feeb)
     );
@@ -295,7 +295,7 @@ class FungibleToken {
     genesisLockingScript,
 
     utxos,
-    utxoAddress,
+    changeAddress,
     feeb,
     tokenContract,
     allowIncreaseIssues,
@@ -322,7 +322,7 @@ class FungibleToken {
       tx.addInput(
         new bsv.Transaction.Input({
           output: new bsv.Transaction.Output({
-            script: bsv.Script.buildPublicKeyHashOut(utxoAddress).toHex(),
+            script: bsv.Script.buildPublicKeyHashOut(utxo.address).toHex(),
             satoshis: utxo.satoshis,
           }),
           prevTxId: utxo.txId,
@@ -372,7 +372,7 @@ class FungibleToken {
         satoshis: tokenContractSatoshis,
       })
     );
-    tx.change(utxoAddress);
+    tx.change(changeAddress);
 
     const curInputIndex = 0;
     const curInputSatoshis = tx.inputs[curInputIndex].output.satoshis;
@@ -425,7 +425,7 @@ class FungibleToken {
         genesisContractSatoshis,
         new Bytes(tokenContract.lockingScript.toHex()),
         tokenContractSatoshis,
-        new Ripemd160(toHex(utxoAddress.hashBuffer)),
+        new Ripemd160(toHex(changeAddress.hashBuffer)),
         changeSatoshis
       );
       tx.inputs[0].setScript(contractObj.toScript());
@@ -487,13 +487,13 @@ class FungibleToken {
     return routeCheckContract;
   }
 
-  createRouteCheckTx({ utxos, utxoAddress, feeb, routeCheckContract }) {
+  createRouteCheckTx({ utxos, changeAddress, feeb, routeCheckContract }) {
     const tx = new bsv.Transaction().from(
       utxos.map((utxo) => ({
         txId: utxo.txId,
         outputIndex: utxo.outputIndex,
         satoshis: utxo.satoshis,
-        script: bsv.Script.buildPublicKeyHashOut(utxoAddress).toHex(),
+        script: bsv.Script.buildPublicKeyHashOut(utxo.address).toHex(),
       }))
     );
 
@@ -506,7 +506,7 @@ class FungibleToken {
       })
     );
 
-    tx.change(utxoAddress);
+    tx.change(changeAddress);
     tx.fee(
       Math.ceil((tx.serialize(true).length / 2 + utxos.length * 107) * feeb)
     );
@@ -525,7 +525,7 @@ class FungibleToken {
     tokenRabinDatas,
     routeCheckContract,
     senderPk,
-    utxoAddress,
+    changeAddress,
     feeb,
   }) {
     const tx = new bsv.Transaction();
@@ -656,7 +656,7 @@ class FungibleToken {
       outputSatoshiArray = Buffer.concat([outputSatoshiArray, satoshiBuf]);
     }
 
-    tx.change(utxoAddress);
+    tx.change(changeAddress);
 
     //let the fee to be exact in the second round
     for (let c = 0; c < 2; c++) {
@@ -743,8 +743,14 @@ class FungibleToken {
         new Bytes(toHex(inputTokenAmountArray)),
         new Bytes(toHex(outputSatoshiArray)),
         changeSatoshis,
-        new Ripemd160(toHex(utxoAddress.hashBuffer))
+        new Ripemd160(toHex(changeAddress.hashBuffer))
       );
+      // let txContext = {
+      //   tx: tx,
+      // };
+      // let ret = unlockingContract.verify(txContext);
+      // if (ret.success == false) throw ret;
+      // throw "success";
       tx.inputs[routeCheckInputIndex].setScript(unlockingContract.toScript());
     }
 

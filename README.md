@@ -46,9 +46,10 @@ More info about BCP02-Fungible-Token please visit the repo <a href="https://gith
 ```
 [code part](variable)
 [data part]
+  TokenInputCount    (4 bytes) token inputs count
   ReceiverTokenAmountArray (8 bytes * n) the array of receiver's tokenAmount
   RecervierArray  (20 bytes * n) the array of receiver's tokenAddress
-  ReceiverCount    (1 bytes) receivers count
+  ReceiverCount    (4 bytes) receivers count
   TokenCodeHash   (20 bytes) token contract code hash
   TokenID         (36 bytes) tokenID
 ```
@@ -186,16 +187,16 @@ function genSignedTx(raw, outputs, sigtype, tokenPrivateKey, utxoPrivateKey) {
 
 - params
 
-| param       | required | type          | note                                             |
-| ----------- | -------- | ------------- | ------------------------------------------------ |
-| issuerPk    | true     | string        | the PublicKey of the Issuer                      |
-| tokenName   | true     | string(20 B)  | the token name                                   |
-| tokenSymbol | true     | string(10 B)  | the token symbol                                 |
-| decimalNum  | true     | number(UInt8) | the token amount decimal number bytes            |
-| utxos       | true     | array         | e.g. [{txId:'xxxx',outputIndex:0,satoshis:1000}] |
-| utxoAddress | true     | string        | the Address of the utxos                         |
-| feeb        | true     | number        | sat/B. the fee rate for this transaction         |
-| network     | false    | string        | mainnet/testnet/regnet,default is mainnet        |
+| param         | required | type          | note                                             |
+| ------------- | -------- | ------------- | ------------------------------------------------ |
+| issuerPk      | true     | string        | the PublicKey of the Issuer                      |
+| tokenName     | true     | string(20 B)  | the token name                                   |
+| tokenSymbol   | true     | string(10 B)  | the token symbol                                 |
+| decimalNum    | true     | number(UInt8) | the token amount decimal number bytes            |
+| utxos         | true     | array         | e.g. [{txId:'xxxx',outputIndex:0,satoshis:1000}] |
+| changeAddress | true     | string        | the change Address                               |
+| feeb          | true     | number        | sat/B. the fee rate for this transaction         |
+| network       | false    | string        | mainnet/testnet/regnet,default is mainnet        |
 
 - req
 
@@ -209,10 +210,11 @@ curl -X POST  -H "Content-Type: application/json" --data '{
     {
       "txId": "27b4fba771dcbdfa0591fe4bb9819b53a1041540898174e65ffd5b33e3cadde0",
       "satoshis": 2070486,
-      "outputIndex": 1
+      "outputIndex": 1,
+      "address":"18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
     }
   ],
-  "utxoAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
+  "changeAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
   "feeb": 0.5,
   "network": "mainnet"
 }' http://127.0.0.1:8091/genesis
@@ -282,10 +284,11 @@ curl -X POST -H "Content-Type: application/json" --data '{
     {
       "txId": "0df4c290b872724f7d3e281e3b2ce70b6d820ab2a784f0ed965c25d80b9344ca",
       "satoshis": 2065161,
-      "outputIndex": 1
+      "outputIndex": 1,
+      "changeAddress":"18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2"
     }
   ],
-  "utxoAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
+  "changeAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
   "feeb": 0.5,
   "network": "mainnet"
 }' http://127.0.0.1:8092/issue
@@ -359,10 +362,11 @@ curl -X POST -H "Content-Type: application/json" --data '{
     {
       "txId": "da88d0fe634d7096f0486b1df0f78b65865cb29b55fb0ce1aae250018ff09801",
       "satoshis": 1902341,
-      "outputIndex": 2
+      "outputIndex": 2,
+      "address":"18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2"
     }
   ],
-  "utxoAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
+  "changeAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
   "feeb": 0.5,
   "network": "mainnet"
 }' http://127.0.0.1:8091/routeCheck
@@ -435,10 +439,11 @@ curl -X POST -H "Content-Type: application/json" --data '{
     {
       "txId": "6e456b523c36983d8f34fdf16a193c0451dc6091bfb54b0f8661c36a106212a1",
       "satoshis": 1894397,
-      "outputIndex": 1
+      "outputIndex": 1,
+      "address":"18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2"
     }
   ],
-  "utxoAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
+  "changeAddress": "18uoxg8VfRnLjgrbDmqL3VfbigvgkkU8e2",
   "feeb": 0.5,
   "network": "mainnet"
 }' http://127.0.0.1:8091/transfer

@@ -11,7 +11,7 @@ exports.default = function () {
       decimalNum,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     } = body;
@@ -24,7 +24,7 @@ exports.default = function () {
       decimalNum,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     });
@@ -49,7 +49,7 @@ exports.default = function () {
       signerSelecteds,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     } = body;
@@ -72,7 +72,7 @@ exports.default = function () {
       signerSelecteds,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     });
@@ -87,7 +87,7 @@ exports.default = function () {
       routeCheckType,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     } = body;
@@ -100,7 +100,7 @@ exports.default = function () {
       routeCheckType,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     });
@@ -117,7 +117,7 @@ exports.default = function () {
       signerSelecteds,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     } = body;
@@ -132,7 +132,7 @@ exports.default = function () {
       signerSelecteds,
 
       utxos,
-      utxoAddress,
+      changeAddress,
       feeb,
       network,
     });
