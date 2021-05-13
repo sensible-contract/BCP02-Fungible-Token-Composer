@@ -53,6 +53,7 @@ exports.default = function () {
       feeb,
       network,
     } = body;
+    signerSelecteds = signerSelecteds || body.oracleSelecteds;
     return await TokenTxHelper.issue({
       satotxPubKeys: signers.map((v) => v.satotxPubKey),
 
@@ -121,6 +122,7 @@ exports.default = function () {
       feeb,
       network,
     } = body;
+    signerSelecteds = signerSelecteds || body.oracleSelecteds;
     return await TokenTxHelper.transfer({
       satotxPubKeys: signers.map((v) => v.satotxPubKey),
 
