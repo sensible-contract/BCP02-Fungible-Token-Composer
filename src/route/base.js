@@ -32,7 +32,7 @@ exports.default = function () {
 
   NetMgr.listen("POST", "/issue", async function (req, res, params, body) {
     const signers = app.get("signerConfig");
-    const {
+    let {
       genesisTxId,
       genesisOutputIndex,
       preUtxoTxId,
@@ -109,7 +109,7 @@ exports.default = function () {
 
   NetMgr.listen("POST", "/transfer", async function (req, res, params, body) {
     const signers = app.get("signerConfig");
-    const {
+    let {
       senderPk,
       receivers,
       ftUtxos,
